@@ -1,4 +1,8 @@
 import axios from 'axios';
+import {
+  Move,
+  PokeapiResponse,
+} from '../interfaces/pokeApi-response.interfaces';
 
 export class Pokemon {
   // public readonly name: string;
@@ -30,10 +34,12 @@ export class Pokemon {
     console.log(`Hola, soy ${this.name}, tengo ${this.age} años.`);
   }
 
-  async getmoves() {
-    const moves = await axios.get(`https://pokeapi.co/api/v2/pokemon/${this.id}/`);
-    console.log(moves.data.moves);
-    return moves;
+  async getmoves(): Promise<Move[]> {
+    const { data } = await axios.get<PokeapiResponse>(
+      `https://pokeapi.co/api/v2/pokemon/${this.id}/`
+    );
+    console.log(`Movimientos de ${data.moves.map(move => move.move.name).join(', ')}`);
+    return data.moves;
   }
 }
 
@@ -43,4 +49,4 @@ export const squirtle = new Pokemon('Squirtle', 7, 8);
 console.log(pikachu.imageUrl);
 pikachu.sceen();
 
-console.log(charmander.getmoves());
+console.log('prom',charmander.getmoves());
