@@ -2,7 +2,7 @@ import './style.css';
 import typescriptLogo from './typescript.svg';
 import { name, templateString } from './bases/01-types.ts';
 import { bulbasaur, pokemons } from './bases/02-objects.ts';
-import { charmander } from './bases/03-class.ts';
+import { charmander } from './bases/04-injections.ts';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>

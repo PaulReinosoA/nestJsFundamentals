@@ -29,6 +29,7 @@ export class Pokemon {
     console.log(`${this.name.toUpperCase()} !!!`);
     charmander.speak();
   }
+  
   //* solo lo uso dentro de la instacia de la clase
   private speak() {
     console.log(`Hola, soy ${this.name}, tengo ${this.age} años.`);
