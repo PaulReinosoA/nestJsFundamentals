@@ -4,7 +4,7 @@ import './style.css';
 // import { bulbasaur, pokemons } from './bases/02-objects.ts';
 // import { charmanderAxios } from './bases/04-injections.ts';
 // import { charmanderFetch } from './bases/04-injections.ts';
-import { charmander } from './bases/05-decoradores.ts';
+import { charmander } from './bases/06-decoradores2.ts';
 
 // document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 //   <div>
@@ -24,5 +24,5 @@ import { charmander } from './bases/05-decoradores.ts';
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
   <h1>TypeScript + Vite HELLO!!</h1>  
-  <h1>${charmander.screan()}</h1>    
+  <h1>${charmander.name}</h1>    
 `;
