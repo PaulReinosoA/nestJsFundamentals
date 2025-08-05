@@ -38,4 +38,5 @@ export class Pokemon {
 export const charmander = new Pokemon(4, 'charmander05');
 
 // charmander.screan();
+
 charmander.speak2();
