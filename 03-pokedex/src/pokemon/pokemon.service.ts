@@ -96,4 +96,12 @@ export class PokemonService {
       `Can't create pokemon - check server logs`,
     );
   }
+
+  async removeAll() {
+    await this.pokemonModel.deleteMany({});
+  }
+
+  async createMany(createPokemonDto: CreatePokemonDto[]) {
+    await this.pokemonModel.insertMany(createPokemonDto);
+  }
 }
