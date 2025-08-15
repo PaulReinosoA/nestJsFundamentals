@@ -21,7 +21,7 @@ export class SeedService {
     // );
     //* aqui opcupo mi custom adapter
     const data = await this.http.get<PokeResponse>(
-      'https://pokeapi.co/api/v2/pokemon?limit=10',
+      'https://pokeapi.co/api/v2/pokemon?limit=100',
     );
 
     // const insertPromiseArray = [];
