@@ -10,15 +10,20 @@ import { isValidObjectId, Model } from 'mongoose';
 import { Pokemon } from './entities/pokemon.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PokemonService {
+  private defaulLimit: number;
   //al injectar aqui mi entity(tabla BD) con el decorador nativo de nest para mongoose
   //me permite usar aqui todos lo metodos de mongoose
   constructor(
     @InjectModel(Pokemon.name)
     private readonly pokemonModel: Model<Pokemon>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.defaulLimit = configService.get<number>('defaultLimi')!;
+  }
 
   async create(createPokemonDto: CreatePokemonDto) {
     createPokemonDto.name = createPokemonDto.name.toUpperCase();
@@ -31,7 +36,7 @@ export class PokemonService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const { limit = this.defaulLimit, offset = 0 } = paginationDto;
 
     const pokemons = await this.pokemonModel
       .find()
