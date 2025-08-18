@@ -19,10 +19,15 @@ npm i -g nest/cli
 docker-compose up -d
 ```
 
+5. clonar el archivo __.env.template__
+y renombrar a __.env__
+
+
+6. llenar variables de entorno definidas en ```.env```
+
 ## stack usado
 * MongoDB
 * NestJs
-
 
 
 #### Documentacion de mongo con nestjs:
