@@ -29,6 +29,16 @@ y renombrar a __.env__
 * MongoDB
 * NestJs
 
+# Build Productiopn
+1.Crear archivo 
+```
+.env.prod
+```
+2. llenar las variables de entorno de prod
+3. crear la nueva imagen 
+``` docker-compose -f docker-compose.prod.yaml --env-file .env.prod up --build ```
+4. levantar la imjagen 
+``` docker-compose -f docker-compose.prod.yaml --env-file .env.prod up   ```
 
 #### Documentacion de mongo con nestjs:
 * https://docs.nestjs.com/techniques/mongodb
