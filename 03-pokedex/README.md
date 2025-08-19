@@ -10,10 +10,12 @@
 ```
 npm i
 ```
+
 3. Tener nest cli instalado
 ```
 npm i -g nest/cli
 ```
+
 4. levantar la base de datos
 ```
 docker-compose up -d
@@ -25,6 +27,9 @@ y renombrar a __.env__
 
 6. llenar variables de entorno definidas en ```.env```
 
+
+7. ejecutar el comando ```npm run start:dev```
+
 ## stack usado
 * MongoDB
 * NestJs
@@ -35,10 +40,15 @@ y renombrar a __.env__
 .env.prod
 ```
 2. llenar las variables de entorno de prod
+
 3. crear la nueva imagen 
-``` docker-compose -f docker-compose.prod.yaml --env-file .env.prod up --build ```
+``` 
+docker-compose -f docker-compose.prod.yaml --env-file .env.prod up --build
+```
 4. levantar la imjagen 
-``` docker-compose -f docker-compose.prod.yaml --env-file .env.prod up   ```
+``` 
+docker-compose -f docker-compose.prod.yaml --env-file .env.prod up
+```
 
 #### Documentacion de mongo con nestjs:
 * https://docs.nestjs.com/techniques/mongodb
