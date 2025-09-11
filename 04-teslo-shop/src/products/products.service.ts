@@ -10,6 +10,9 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
+import { PaginationDto } from '../common/dtos/pagination.dto';
+import { isUUID } from 'class-validator';
+import { ProductImage } from './entities';
 
 @Injectable()
 export class ProductsService {
@@ -18,25 +21,52 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+
+    @InjectRepository(Product)
+    private readonly productImagesRepository: Repository<ProductImage>,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
     try {
-      const product = this.productRepository.create(createProductDto);
-      return await this.productRepository.save(product);
+      const { images = [], ...productDetails } = createProductDto;
+
+      const product = this.productRepository.create({
+        ...productDetails,
+        images: images.map((img) =>
+          this.productImagesRepository.create({
+            url: img,
+          }),
+        ),
+      });
+
+      await this.productRepository.save(product);
+      return product;
     } catch (error) {
       this.handleDBexception(error);
     }
   }
 
-  findAll() {
-    return this.productRepository.find();
+  findAll(paginationDto: PaginationDto) {
+    const { limit = 10, ofset = 0 } = paginationDto;
+    return this.productRepository.find({ take: limit, skip: ofset });
   }
 
-  async findOne(id: string) {
-    const product = await this.productRepository.findOneBy({ id: id });
+  async findOne(term: string) {
+    let product: Product | null;
+    if (isUUID(term)) {
+      product = await this.productRepository.findOneBy({ id: term });
+    } else {
+      //product = await this.productRepository.findOneBy({ slug: term });
+      const queryBuilder = this.productRepository.createQueryBuilder();
+      product = await queryBuilder
+        .where('UPPER(title)=:title or LOWER(slug)=:slug', {
+          title: term.toUpperCase(),
+          slug: term.toLowerCase(),
+        })
+        .getOne();
+    }
     if (!product)
-      throw new NotFoundException(`product not found with id: ${id}`);
+      throw new NotFoundException(`product not found with term: ${term}`);
     return product;
   }
 
@@ -44,10 +74,11 @@ export class ProductsService {
     try {
       this.findOne(id);
       const productUpdated = await this.productRepository.preload({
-        ...updateProductDto,
         id,
+        ...updateProductDto,
+        images: [],
       });
-      return await this.productRepository.save({ ...productUpdated, id });
+      return await this.productRepository.save({ id, ...productUpdated });
     } catch (error) {
       this.handleDBexception(error);
     }
