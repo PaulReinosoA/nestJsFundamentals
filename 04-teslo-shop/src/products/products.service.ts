@@ -13,6 +13,7 @@ import { Repository } from 'typeorm';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 import { isUUID } from 'class-validator';
 import { ProductImage } from './entities';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -22,14 +23,15 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
 
-    @InjectRepository(Product)
+    @InjectRepository(ProductImage)
     private readonly productImagesRepository: Repository<ProductImage>,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
     try {
       const { images = [], ...productDetails } = createProductDto;
-
       const product = this.productRepository.create({
         ...productDetails,
         images: images.map((img) =>
@@ -38,7 +40,6 @@ export class ProductsService {
           }),
         ),
       });
-
       await this.productRepository.save(product);
       return product;
     } catch (error) {
@@ -46,9 +47,17 @@ export class ProductsService {
     }
   }
 
-  findAll(paginationDto: PaginationDto) {
+  async findAll(paginationDto: PaginationDto) {
     const { limit = 10, ofset = 0 } = paginationDto;
-    return this.productRepository.find({ take: limit, skip: ofset });
+    const products = await this.productRepository.find({
+      take: limit,
+      skip: ofset,
+      relations: { images: true },
+    });
+    return products.map((product) => ({
+      ...product,
+      images: product.images.map((img) => img.url),
+    }));
   }
 
   async findOne(term: string) {
@@ -57,12 +66,13 @@ export class ProductsService {
       product = await this.productRepository.findOneBy({ id: term });
     } else {
       //product = await this.productRepository.findOneBy({ slug: term });
-      const queryBuilder = this.productRepository.createQueryBuilder();
+      const queryBuilder = this.productRepository.createQueryBuilder('prod');
       product = await queryBuilder
         .where('UPPER(title)=:title or LOWER(slug)=:slug', {
           title: term.toUpperCase(),
           slug: term.toLowerCase(),
         })
+        .leftJoinAndSelect('prod.images', 'prodImages') //relaciones de tablas
         .getOne();
     }
     if (!product)
@@ -70,24 +80,63 @@ export class ProductsService {
     return product;
   }
 
+  async findOnePlain(term: string) {
+    const { images = [], ...rest } = await this.findOne(term);
+    return {
+      ...rest,
+      images: images.map((image) => image.url),
+    };
+  }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
+    const { images, ...toUpdate } = updateProductDto;
+
+    const product = await this.productRepository.preload({ id, ...toUpdate });
+
+    if (!product)
+      throw new NotFoundException(`Product with id: ${id} not found`);
+
+    // Create query runner
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      this.findOne(id);
-      const productUpdated = await this.productRepository.preload({
-        id,
-        ...updateProductDto,
-        images: [],
-      });
-      return await this.productRepository.save({ id, ...productUpdated });
+      if (images) {
+        await queryRunner.manager.delete(ProductImage, { product: { id } });
+
+        product.images = images.map((image) =>
+          this.productImagesRepository.create({ url: image }),
+        );
+      }
+
+      // await this.productRepository.save( product );
+      await queryRunner.manager.save(product);
+
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      return this.findOnePlain(id);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       this.handleDBexception(error);
     }
   }
 
   async remove(id: string) {
     const productRemoved = await this.findOne(id);
-    await this.productRepository.delete({ id });
+    await this.productRepository.remove(productRemoved);
     return productRemoved;
+  }
+
+  async deleteAllProducts() {
+    const query = this.productRepository.createQueryBuilder('product');
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new Error(`error: ${error}`);
+    }
   }
 
   private handleDBexception(error: any) {
