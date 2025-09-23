@@ -32,6 +32,12 @@ export class AuthController {
     return this.authService.loginUser(loginUserDto);
   }
 
+  @Post('check-auth-status')
+  @UseGuards(AuthGuard())
+  checkAuthStatus(@Body() user: LoginUserDto) {
+    return this.authService.checkAuthStatus(user);
+  }
+
   @Get('private')
   @UseGuards(AuthGuard())
   testingPrivateRoute(
@@ -66,7 +72,7 @@ export class AuthController {
   }
 
   @Get('private3')
-  @Auth(ValidRoles.admin, ValidRoles.user)//agrego el roll para la ruta o ninguno si no quiero proteger la ruta
+  @Auth(ValidRoles.admin, ValidRoles.user) //agrego el roll para la ruta o ninguno si no quiero proteger la ruta
   privateRoute3(@GetUser() user: User) {
     return {
       ok: true,

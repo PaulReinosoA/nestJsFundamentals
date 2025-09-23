@@ -57,8 +57,31 @@ export class AuthService {
       throw new UnauthorizedException('Credentials are not valid (email)');
 
     if (!bcrypt.compareSync(password, user.password))
-      throw new UnauthorizedException('Credentials are not valid (email)');
+      throw new UnauthorizedException('Credentials are not valid (password)');
     //TODO retornar jwt
+    return {
+      ...user,
+      token: this.getJwtoken({ /*email: user.email*/ id: user.id }),
+    };
+  }
+
+  async checkAuthStatus(userCheck: LoginUserDto) {
+    const { email } = userCheck;
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: {
+        email: true,
+        password: true,
+        id: true,
+        fullName: true,
+        roles: true,
+        isActive: true,
+      },
+    });
+
+    if (!user) throw new UnauthorizedException('User not found');
+
     return {
       ...user,
       token: this.getJwtoken({ /*email: user.email*/ id: user.id }),
