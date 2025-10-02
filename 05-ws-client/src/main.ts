@@ -5,6 +5,9 @@ import { connectToServer } from './socket-client.ts';
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
     <h1>Web Socket - online</h1>
+    <input id="jwt-token" placeholder="JWT token" style="width: 300px;" />
+    <button id="connect-btn">Connect</button>
+    <br />
     <span id="server-status">Connecting...</span>
 
     <ul id="clients-ul">      
@@ -23,4 +26,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `;
 
 // setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
-connectToServer();
+// connectToServer();
+const inputJwt = document.querySelector<HTMLInputElement>('#jwt-token');
+const connectBtn = document.querySelector<HTMLButtonElement>('#connect-btn');
+connectBtn?.addEventListener('click', () => {
+  if (inputJwt?.value.trim().length === 0) {
+    alert('You must provide a JWT token');
+    return;
+  }
+  console.log({ token: inputJwt!.value });
+  connectToServer(inputJwt!.value.trim());
+});

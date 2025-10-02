@@ -1,6 +1,11 @@
 import { Manager, Socket } from 'socket.io-client';
-export const connectToServer = () => {
-  const manager = new Manager('http://localhost:88/socket.io/socket.io.js');
+
+export const connectToServer = (token: string) => {
+  const manager = new Manager('http://localhost:88/socket.io/socket.io.js', {
+    extraHeaders: {
+      authentication: token,
+    },
+  });
   const socket = manager.socket('/');
 
   addlistener(socket);
@@ -53,17 +58,18 @@ const addlistener = (socket: Socket) => {
     messageInput!.value = '';
   });
 
-  socket.on('message-from-server', (payload: { fullName: string; message: string }) => {
-    const newMessage = `
+  socket.on(
+    'message-from-server',
+    (payload: { fullName: string; message: string }) => {
+      const newMessage = `
       <li>
         <strong>${payload.fullName}</strong>
         <span>${payload.message}</span>
       </li>
     `;
-    const li = document.createElement('li');
-    li.innerHTML = newMessage;
-    messagesUl.appendChild(li);
-  }); 
-
-
+      const li = document.createElement('li');
+      li.innerHTML = newMessage;
+      messagesUl.appendChild(li);
+    }
+  );
 };

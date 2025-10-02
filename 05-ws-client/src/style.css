@@ -99,6 +99,6 @@ input {
   font-size: 1em;
   padding: 0.5em;
   border-radius: 0.25em;
-  border: none;
-  outline: none;
+  border: #1a1a1a 1px solid;
+  outline: orangered solid 2px;
 }
