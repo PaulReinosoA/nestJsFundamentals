@@ -14,6 +14,7 @@ import { join } from 'path';
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
+      ssl: process.env.STAGE === 'prod', //true,
       //bdd postgres
       type: 'postgres',
       host: process.env.DB_HOST,
