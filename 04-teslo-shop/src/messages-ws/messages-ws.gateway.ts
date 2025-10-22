@@ -21,19 +21,20 @@ export class MessagesWsGateway
     private readonly jwtservice: JwtService,
   ) {}
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     const token = client.handshake.headers.authentication as string;
     let payload: JwtPayload;
 
     try {
-      payload = this.jwtservice.verify(token);      
+      payload = this.jwtservice.verify(token);
+      await this.messagesWsService.registerClient(client, payload.id);
     } catch (error) {
       console.log(error);
       client.disconnect();
       return;
     }
-    console.log({ payload });
-    this.messagesWsService.registerClient(client);
+    //console.log({ payload });
+    // this.messagesWsService.registerClient(client, payload.id);
 
     this.wss.emit(
       'clients-updated',
@@ -53,20 +54,21 @@ export class MessagesWsGateway
 
   @SubscribeMessage('message-from-client')
   handleMessageFromClient(client: Socket, payload: NewMessageDto) {
-    console.log({ payload });
 
+    // console.log({ payload });
     //*usar  this.wss.emit enviaria a todos los clientes conectados
-
     //! emitir unicamente la cliente
     // client.emit('message-from-server', {
     //   fullName: 'Soy yo',
     //   message: payload.message || 'no-message!!',
     // });
-
     //! emite a todos los clientes menos al que envia
-    client.broadcast.emit('message-from-server', {
-      fullName: 'Soy yo',
+    //client.broadcast.emit('message-from-server', {
+
+    this.wss.emit('message-from-server', {
+      fullName: this.messagesWsService.getUserFullNameBySocketId(client.id),
       message: payload.message || 'no-message!!',
     });
   }
 }
+
