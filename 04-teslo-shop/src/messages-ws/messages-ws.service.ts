@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Socket } from 'socket.io';
 import { User } from '../auth/entities/user.entity';
 import { Repository } from 'typeorm';
 
 interface ConnectedClients {
-  // [id: string]: Socket;
   [id: string]: {
     socket: Socket;
     user: User;
@@ -26,7 +26,7 @@ export class MessagesWsService {
     if (!user) throw new Error('User not found');
     if (!user.isActive) throw new Error('User not active');
 
-    //this.checkUserConnection(user);
+    this.checkUserConnection(user);
 
     this.connectedClients[client.id] = {
       socket: client,
@@ -39,12 +39,11 @@ export class MessagesWsService {
   }
 
   getConnectedClients(): string[] {
-    //console.log({ connectedClients: this.connectedClients });
     return Object.keys(this.connectedClients);
   }
 
-  getUserFullNameBySocketId(socketId: string): string {
-    console.log({ fullName: this.connectedClients[socketId].user.fullName });
+  getUserFullName(socketId: string) {
+    console.log({socketId})
     return this.connectedClients[socketId].user.fullName;
   }
 

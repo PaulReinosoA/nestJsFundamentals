@@ -46,13 +46,14 @@ export class AuthService {
   }
 
   async loginUser(loginUserDto: LoginUserDto) {
-    const { email, password } = loginUserDto;
+    const { password, email } = loginUserDto;
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true, id: true },
+      select: { email: true, password: true, id: true, fullName: true }, //! OJO!
     });
 
+    console.log({ user });
     if (!user)
       throw new UnauthorizedException('Credentials are not valid (email)');
 
@@ -67,7 +68,7 @@ export class AuthService {
 
   async checkAuthStatus(userCheck: LoginUserDto) {
     const { email } = userCheck;
-
+    console.log({ userCheck });
     const user = await this.userRepository.findOne({
       where: { email },
       select: {
