@@ -47,13 +47,15 @@ export class MessagesWsService {
     console.log({ fullName: this.connectedClients[socketId].user.fullName });
     return this.connectedClients[socketId].user.fullName;
   }
+
   private checkUserConnection(user: User) {
     for (const clientId of Object.keys(this.connectedClients)) {
       const connectedClient = this.connectedClients[clientId];
+
       if (connectedClient.user.id === user.id) {
         connectedClient.socket.disconnect();
         break;
       }
     }
-  } 
+  }
 }

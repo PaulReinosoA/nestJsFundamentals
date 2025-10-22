@@ -1,57 +1,57 @@
 import {
-  BadRequestException,
   Controller,
   Get,
-  Param,
   Post,
-  Res,
+  Param,
   UploadedFile,
   UseInterceptors,
+  BadRequestException,
+  Res,
 } from '@nestjs/common';
-import { FilesService } from './files.service';
+import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { fileFilter, fileNamer } from './helpers';
 import type { Response } from 'express';
+import { diskStorage } from 'multer';
+import { FilesService } from './files.service';
+
+import { fileFilter, fileNamer } from './helpers';
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(
+    private readonly filesService: FilesService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Get('product/:imageName')
   findProductImage(
-    @Res() res: Response, //manualmente manejo yo la respuesta
+    @Res() res: Response,
     @Param('imageName') imageName: string,
   ) {
     const path = this.filesService.getStaticProductImage(imageName);
-    res.status(403).json({
-      ok: false,
-      path: path,
-    });
-    console.log({ path });
+
     res.sendFile(path);
   }
 
-  // El estandar para subir archivos es un post
   @Post('product')
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: fileFilter,
-      limits: { fileSize: 1000000 },
+      // limits: { fileSize: 1000 }
       storage: diskStorage({
-        destination: './static/upload ',
+        destination: './static/products',
         filename: fileNamer,
       }),
     }),
-  ) //propiedad del body al enviar el archivo por postman, y la referenia de mihelper para validar el archivo
+  )
   uploadProductImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException(
-        'Not found file with correct extention to upload',
-      );
+      throw new BadRequestException('Make sure that the file is an image');
     }
 
-    console.log({ fileControler: file });
-    return file;
+    //const secureUrl = `${ file.filename }`;
+    const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
+
+    return { secureUrl };
   }
 }
